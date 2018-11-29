@@ -49,6 +49,35 @@ matrix im2col(image im, int size, int stride)
     matrix col = make_matrix(rows, cols);
 
     // TODO: 5.1 - fill in the column matrix
+    // YSS DONE!
+    int ch, x, y, x_, y_;
+    int row_lower_range, row_upper_range, col_lower_range, col_upper_range;
+    int im2col_col, im2col_row;
+    int index;
+    float val;
+    for (ch = 0; ch < im.c; ch++) {
+        for (y = 0; y < im.h; y += stride) {
+            for (x = 0; x < im.w; x += stride) {
+                row_lower_range = y - size / 2;
+                row_upper_range = y + (size - 1) / 2;
+                col_lower_range = x - size / 2;
+                col_upper_range = x + (size - 1) / 2;
+                im2col_col = y / stride * outw + x / stride;
+                im2col_row = ch * size * size;
+                for (y_ = row_lower_range; y_ <= row_upper_range; y_++) {
+                    for (x_ = col_lower_range; x_ <= col_upper_range; x_++) {
+                        index = im2col_row * cols + im2col_col;
+                        if(x_ < 0 || x_ >= im.w || y_ < 0 || y_ >= im.h)
+                            val = 0;
+                        else
+                            val = get_pixel(im, x_, y_, ch);
+                        col.data[index] = val;
+                        im2col_row++;
+                    }
+                }
+            }
+        }
+    }
 
     return col;
 }
@@ -66,6 +95,28 @@ void col2im(matrix col, int size, int stride, image im)
     int cols = outw * outh;
 
     // TODO: 5.2 - add values into image im from the column matrix
+    // YSS DONE!
+    int im2col_row, im2col_col;
+    int ch, x, y, x_, y_;
+    int index, index_;
+    float val;
+    for(im2col_col = 0; im2col_col < cols; im2col_col++) {
+        y = (im2col_col / outw) * stride;
+        x = (im2col_col % outw) * stride;
+        for(im2col_row = 0; im2col_row < rows; im2col_row++) {
+            ch = im2col_row / (size * size);
+            index_ = im2col_row % (size * size);
+            y_ = y + index_ / size - size / 2;
+            x_ = x + index_ % size - size / 2;
+            index = im2col_row * cols + im2col_col;
+            if(x_ < 0 || x_ >= im.w || y_ < 0 || y_ >= im.h)
+                val = 0;
+            else {
+                val = col.data[index];
+                set_pixel(im, x_, y_, ch, get_pixel(im, x_, y_, ch) + val);
+            }
+        }
+    }
 
 }
 
@@ -151,6 +202,9 @@ void backward_convolutional_layer(layer l, matrix prev_delta)
 void update_convolutional_layer(layer l, float rate, float momentum, float decay)
 {
     // TODO: 5.3 Update the weights, similar to the connected layer.
+    axpy_matrix(-1 * decay, l.w, l.dw);
+    axpy_matrix(rate, l.dw, l.w);
+    scal_matrix(momentum, l.dw);
 }
 
 // Make a new convolutional layer
