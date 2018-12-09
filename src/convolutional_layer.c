@@ -52,18 +52,35 @@ matrix im2col(image im, int size, int stride)
     // YSS DONE!
     int ch, x, y, x_, y_;
     int row_lower_range, row_upper_range, col_lower_range, col_upper_range;
-    int im2col_col, im2col_row;
+    int im2col_row, im2col_col;
     int index;
     float val;
     for (ch = 0; ch < im.c; ch++) {
         for (y = 0; y < im.h; y += stride) {
             for (x = 0; x < im.w; x += stride) {
+            	
+            	// find the range of row and column of pixels that fall 
+            	// under the filter when it's applied to pixel (y, x) of 
+            	// channel c of image (pixel at row y and column x)
+                /*
+                // for size % 2 == 0, pixel (y, x) is at bottom right of the center
                 row_lower_range = y - size / 2;
                 row_upper_range = y + (size - 1) / 2;
                 col_lower_range = x - size / 2;
                 col_upper_range = x + (size - 1) / 2;
+                */
+                // for size % 2 == 0, pixel (y, x) is at top left of the center
+                row_lower_range = y - (size - 1) / 2;
+                row_upper_range = y + size / 2;
+                col_lower_range = x - (size - 1) / 2;
+                col_upper_range = x + size / 2;
+
+                // find the corresponding (starting) row and column of 
+                // im2col where the pixels should be organized
                 im2col_col = y / stride * outw + x / stride;
                 im2col_row = ch * size * size;
+
+                // copy over the pixel values in im2col
                 for (y_ = row_lower_range; y_ <= row_upper_range; y_++) {
                     for (x_ = col_lower_range; x_ <= col_upper_range; x_++) {
                         index = im2col_row * cols + im2col_col;
@@ -101,14 +118,28 @@ void col2im(matrix col, int size, int stride, image im)
     int index, index_;
     float val;
     for(im2col_col = 0; im2col_col < cols; im2col_col++) {
+    	
+    	// find the pixel where the filter was applied 
         y = (im2col_col / outw) * stride;
         x = (im2col_col % outw) * stride;
+
         for(im2col_row = 0; im2col_row < rows; im2col_row++) {
+
+        	// for each item in im2col find the corresponding pixel
+        	// coordinate and channel it's associated with
             ch = im2col_row / (size * size);
             index_ = im2col_row % (size * size);
+            /*
+            // for size % 2 == 0, pixel (y, x) is at bottom right of the center
             y_ = y + index_ / size - size / 2;
             x_ = x + index_ % size - size / 2;
+            */
+            // for size % 2 == 0, pixel (y, x) is at top left of the center
+            y_ = y + index_ / size - (size - 1) / 2;
+            x_ = x + index_ % size - (size - 1) / 2;
             index = im2col_row * cols + im2col_col;
+
+            // add the value at im2col to the current pixel value
             if(x_ < 0 || x_ >= im.w || y_ < 0 || y_ >= im.h)
                 val = 0;
             else {
