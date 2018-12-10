@@ -8,7 +8,7 @@
 .fuse*
 libuwnet*
 uwnet
-unit_test
+unit_test.o
 
 # OS Generated #
 .DS_Store*
