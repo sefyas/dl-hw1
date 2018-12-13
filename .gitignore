@@ -9,6 +9,7 @@
 libuwnet*
 uwnet
 unit_test.o
+cifar
 
 # OS Generated #
 .DS_Store*
