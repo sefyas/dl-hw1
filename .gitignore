@@ -10,6 +10,7 @@ libuwnet*
 uwnet
 unit_test.o
 cifar
+submit.tar.gz
 
 # OS Generated #
 .DS_Store*
